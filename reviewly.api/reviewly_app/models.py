@@ -1,6 +1,7 @@
-from sqlalchemy import Column,Integer,String,ForeignKey
+from sqlalchemy import Column,Integer,String,ForeignKey,TEXT,DateTime
 from .database import Base
-from sqlalchemy.orm import relationship 
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 class User(Base):
     __tablename__ = "users"
@@ -10,3 +11,13 @@ class User(Base):
     image = Column(String(255))
     password = Column(String(255))
     email = Column(String(255), unique=True)
+    review = relationship('Review',back_populates='writer')
+
+class Review(Base):
+    __tablename__ = "reviews"
+    id = Column(Integer,primary_key=True,index=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    review = Column(TEXT)
+    rating = Column(Integer(max=5))
+    date_created = Column(DateTime(timezone=True), server_default=func.now())
+    writer = relationship('User', back_populates='review')
