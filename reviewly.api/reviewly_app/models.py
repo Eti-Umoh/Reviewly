@@ -18,6 +18,6 @@ class Review(Base):
     id = Column(Integer,primary_key=True,index=True)
     user_id = Column(Integer, ForeignKey('users.id'))
     review = Column(TEXT)
-    rating = Column(Integer(max=5))
+    rating = Column(Integer)
     date_created = Column(DateTime(timezone=True), server_default=func.now())
     writer = relationship('User', back_populates='review')
