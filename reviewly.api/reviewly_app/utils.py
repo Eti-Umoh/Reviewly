@@ -1,10 +1,16 @@
+from fastapi import HTTPException, Depends, Cookie, Header
+from fastapi_jwt_auth import AuthJWT
 from passlib.context import CryptContext
 from . import models
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from .database import get_db
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 
-SECRET_KEY='secret'
+SECRET_KEY= os.getenv('SECRET_KEY')
+authjwt_secret_key = os.getenv('authjwt_secret_key')
 ALGORITHM='HS256'
 ACCESS_TOKEN_LIFETIME_MINUTES= 43200
 REFRESH_TOKEN_LIFETIME=14
@@ -34,3 +40,14 @@ def authenticate(db:Session,email:str, password:str):
         raise exception
     return user
 
+def get_current_user(Authorize:AuthJWT=Depends(), db:Session=Depends(get_db), access_token:str=Cookie(default=None),Bearer=Header(default=None)):
+    exception=HTTPException(status_code=401, detail='invalid access token or access token has expired', headers={'WWW-Authenticate': 'Bearer'})
+
+    try:
+
+        Authorize.jwt_required()
+        user_id=Authorize.get_jwt_subject()
+        user=get_user_by_id(db, user_id)
+        return user
+    except:
+        raise exception
