@@ -23,10 +23,20 @@ class AuthDetails(BaseModel):
     refresh_token:str
     user:CreateUser
 
-class Review(BaseModel):
-    review:str
-    rating:int = Field(..., gt=0, le=10)
-
 class Login(BaseModel):
     email:EmailStr
     password:str
+
+class Review(BaseModel):
+    review:str
+    rating:int = Field(..., gt=0, le=10, description='maximum value for rating is 10')
+    image:str
+    video:str
+    helpful:str
+
+class CreateReview(BaseModel):
+    review:str
+    rating:int = Field(..., gt=0, le=10, description='maximum value for rating is 10')
+    image:str
+    video:str
+
