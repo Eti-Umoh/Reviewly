@@ -37,6 +37,7 @@ class Review(BaseModel):
 class CreateReview(BaseModel):
     review:str
     rating:int = Field(..., gt=0, le=10, description='maximum value for rating is 10')
-    image:str
     video:str
 
+class ImageUpdate(BaseModel):
+    image:str

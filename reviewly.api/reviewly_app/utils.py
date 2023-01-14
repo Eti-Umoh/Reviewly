@@ -1,10 +1,12 @@
-from fastapi import HTTPException, Depends, Cookie, Header
+from fastapi import HTTPException, Depends, Cookie, Header, File, UploadFile
 from fastapi_jwt_auth import AuthJWT
 from passlib.context import CryptContext
 from . import models
 from sqlalchemy.orm import Session
 from .database import get_db
 from dotenv import load_dotenv
+from PIL import Image
+import secrets
 import os
 load_dotenv()
 
@@ -51,3 +53,24 @@ def get_current_user(Authorize:AuthJWT=Depends(), db:Session=Depends(get_db), ac
         return user
     except:
         raise exception
+
+async def get_image_url(file: UploadFile = File(...)):
+    FILEPATH = "./static/"
+    filename = file.filename
+    extension= filename.split(".")[1]
+    if extension not in ['png', 'jpg']:
+        return {'status': "error", 'detail':"Image type not allowed"}
+    token_name= secrets.token_hex(8)+"."+extension
+    generated_name=FILEPATH + token_name
+    file_content= await file.read()
+
+    with open(generated_name, 'wb') as file:
+        file.write(file_content)
+
+    img = Image.open(generated_name)
+    resized_image = img.resize(size=(200, 200))
+    resized_image.save(generated_name)
+    
+    file.close()
+    file_url = generated_name[1:]
+    return file_url
