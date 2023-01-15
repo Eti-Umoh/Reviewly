@@ -20,11 +20,16 @@ def post_review(response:Response,payload:schemas.CreateReview,user:dict=Depends
     db.refresh(Review)
     return {'review':Review}
 
-@router.post('image_review')
+@router.post('review_image')
 async def add_image_to_review(id,image: UploadFile = File(...),user:dict=Depends(get_current_user),db:Session = Depends(get_db)):
+    if not user:
+        raise  HTTPException(status_code=404, detail="User not found")
     current_review = db.query(models.Review).filter(models.Review.id == id).first()
-    image_url = await get_image_url(image)
-    current_review.image=image_url
-    db.commit()
-    db.refresh(current_review)
+    if user.id == current_review.user_id:
+        image_url = await get_image_url(image)
+        current_review.image=image_url
+        db.commit()
+        db.refresh(current_review)
+    else:
+        raise  HTTPException(status_code=404, detail="Review does not belong to this user")
     return {'image':image_url}
