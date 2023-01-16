@@ -9,6 +9,7 @@ from PIL import Image
 
 router = APIRouter(tags=['Review'],prefix='/review')
 review_crud = crud.ReviewCrud
+user_helpful_crud = crud.UserHelpfulCrud
 
 @router.post('/post_review')
 def post_review(response:Response,payload:schemas.CreateReview,user:dict=Depends(get_current_user),db:Session=Depends(get_db)):
@@ -49,3 +50,22 @@ async def add_video_to_review(id,video: UploadFile = File(...),user:dict=Depends
         raise  HTTPException(status_code=404, detail="Review does not belong to this user")
     return {'video':video_url}
 
+@router.post('/helpful')
+def mark_review_as_helpful(id,user:dict=Depends(get_current_user),db:Session = Depends(get_db)):
+    if not user:
+        raise  HTTPException(status_code=404, detail="User not found")
+    current_review = get_review_by_id(db,id)
+    check_review_id_and_user_id = db.query(models.UserHelpful).filter(models.UserHelpful.review_id==current_review.id,models.UserHelpful.user_id==user.id).first()
+    if check_review_id_and_user_id:
+            mark = current_review.helpful-1
+            current_review.helpful = mark
+            db.query(models.UserHelpful).filter(models.UserHelpful.review_id==current_review.id,models.UserHelpful.user_id==user.id).delete(synchronize_session=False)
+            db.commit()
+            db.refresh(current_review)
+    else:
+        mark = current_review.helpful+1
+        current_review.helpful = mark
+        db.commit()
+        db.refresh(current_review)
+        user_helpful = user_helpful_crud.create_user_helpful(db,user.id,current_review.id)
+    return {'Marked successfully'}

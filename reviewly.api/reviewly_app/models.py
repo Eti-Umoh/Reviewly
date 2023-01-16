@@ -12,6 +12,7 @@ class User(Base):
     password = Column(String(255))
     email = Column(String(255), unique=True)
     review = relationship('Review',back_populates='writer')
+    user_helpful = relationship('UserHelpful', back_populates='creator')
 
 class Review(Base):
     __tablename__ = "reviews"
@@ -24,3 +25,12 @@ class Review(Base):
     helpful = Column(Integer,default=0)
     date_created = Column(DateTime(timezone=True), server_default=func.now())
     writer = relationship('User', back_populates='review')
+    user_helpful = relationship('UserHelpful', back_populates='review')
+
+class UserHelpful(Base):
+    __tablename__= "user_helpfuls"
+    id = Column(Integer,primary_key=True,index=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    review_id = Column(Integer, ForeignKey('reviews.id'))
+    creator = relationship('User', back_populates='user_helpful')
+    review = relationship('Review',back_populates='user_helpful')

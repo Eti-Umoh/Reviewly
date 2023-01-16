@@ -10,7 +10,7 @@ class User(BaseModel):
 class CreateUser(BaseModel):
     first_name:str
     last_name:str
-    password:str
+    password:str=Field(min_length=6, description='password minimum length is 8 characters')
     email:EmailStr
     class Config:
         orm_mode=True
