@@ -32,6 +32,9 @@ def get_user_by_id(db,id:str):
 
 def get_user_by_email(db,email:str):
         return db.query(models.User).filter(models.User.email==email).first()
+    
+def get_review_by_id(db,id:str):
+    return db.query(models.Review).filter(models.Review.id==id).first()
 
 def authenticate(db:Session,email:str, password:str):
     user=get_user_by_email(db, email)
@@ -55,7 +58,7 @@ def get_current_user(Authorize:AuthJWT=Depends(), db:Session=Depends(get_db), ac
         raise exception
 
 async def get_image_url(file: UploadFile = File(...)):
-    FILEPATH = "./static/"
+    FILEPATH = "./static/review_images/"
     filename = file.filename
     extension= filename.split(".")[1]
     if extension not in ['png', 'jpg']:
@@ -70,6 +73,23 @@ async def get_image_url(file: UploadFile = File(...)):
     img = Image.open(generated_name)
     resized_image = img.resize(size=(200, 200))
     resized_image.save(generated_name)
+    
+    file.close()
+    file_url = generated_name[1:]
+    return file_url
+
+async def get_video_url(file: UploadFile = File(...)):
+    FILEPATH = "./static/review_videos/"
+    filename = file.filename
+    extension= filename.split(".")[1]
+    if extension not in ['mp4', '3gp', 'webm']:
+        return {'status': "error", 'detail':"Video type not allowed"}
+    token_name= secrets.token_hex(8)+"."+extension
+    generated_name=FILEPATH + token_name
+    file_content= await file.read()
+
+    with open(generated_name, 'wb') as file:
+        file.write(file_content)
     
     file.close()
     file_url = generated_name[1:]

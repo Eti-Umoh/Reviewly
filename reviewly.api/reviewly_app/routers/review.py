@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
-from ..utils import get_current_user,get_image_url
+from ..utils import get_current_user,get_image_url,get_video_url,get_review_by_id
 from .. import crud,schemas,models
 from ..database import get_db
 from fastapi.responses import Response
@@ -20,11 +20,11 @@ def post_review(response:Response,payload:schemas.CreateReview,user:dict=Depends
     db.refresh(Review)
     return {'review':Review}
 
-@router.post('review_image')
+@router.post('/review_image')
 async def add_image_to_review(id,image: UploadFile = File(...),user:dict=Depends(get_current_user),db:Session = Depends(get_db)):
     if not user:
         raise  HTTPException(status_code=404, detail="User not found")
-    current_review = db.query(models.Review).filter(models.Review.id == id).first()
+    current_review = get_review_by_id(db,id)
     if user.id == current_review.user_id:
         image_url = await get_image_url(image)
         current_review.image=image_url
@@ -33,3 +33,19 @@ async def add_image_to_review(id,image: UploadFile = File(...),user:dict=Depends
     else:
         raise  HTTPException(status_code=404, detail="Review does not belong to this user")
     return {'image':image_url}
+
+
+@router.post('/review_video')
+async def add_video_to_review(id,video: UploadFile = File(...),user:dict=Depends(get_current_user),db:Session = Depends(get_db)):
+    if not user:
+        raise  HTTPException(status_code=404, detail="User not found")
+    current_review = get_review_by_id(db,id)
+    if user.id == current_review.user_id:
+        video_url = await get_video_url(video)
+        current_review.video=video_url
+        db.commit()
+        db.refresh(current_review)
+    else:
+        raise  HTTPException(status_code=404, detail="Review does not belong to this user")
+    return {'video':video_url}
+
