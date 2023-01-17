@@ -68,4 +68,4 @@ def mark_review_as_helpful(id,user:dict=Depends(get_current_user),db:Session = D
         db.commit()
         db.refresh(current_review)
         user_helpful = user_helpful_crud.create_user_helpful(db,user.id,current_review.id)
-    return {'Marked successfully'}
+    return {'Successful'}
