@@ -1,4 +1,6 @@
 from pydantic import BaseModel,EmailStr,Field
+from datetime import datetime
+from typing import List,Optional
 
 class User(BaseModel):
     first_name:str
@@ -28,11 +30,17 @@ class Login(BaseModel):
     password:str
 
 class Review(BaseModel):
-    review:str
-    rating:int = Field(..., gt=0, le=10, description='maximum value for rating is 10')
-    image:str
-    video:str
-    helpful:str
+    review:Optional[str]
+    rating:Optional[int]
+    image:Optional[str]
+    video:Optional[str]
+    helpful:Optional[int]
+    date_created:Optional[datetime]
+    class Config:
+        orm_mode=True
+
+class ShowReview(BaseModel):
+    all_reviews:List[Review]
 
 class CreateReview(BaseModel):
     review:str

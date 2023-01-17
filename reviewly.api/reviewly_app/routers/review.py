@@ -5,11 +5,13 @@ from ..database import get_db
 from fastapi.responses import Response
 from sqlalchemy.orm import Session 
 from PIL import Image
+from typing import List
 
 
 router = APIRouter(tags=['Review'],prefix='/review')
 review_crud = crud.ReviewCrud
 user_helpful_crud = crud.UserHelpfulCrud
+
 
 @router.post('/post_review')
 def post_review(response:Response,payload:schemas.CreateReview,user:dict=Depends(get_current_user),db:Session=Depends(get_db)):
@@ -69,3 +71,17 @@ def mark_review_as_helpful(id,user:dict=Depends(get_current_user),db:Session = D
         db.refresh(current_review)
         user_helpful = user_helpful_crud.create_user_helpful(db,user.id,current_review.id)
     return {'Successful'}
+
+@router.get('/all_reviews',response_model=List[schemas.Review])
+def all_reviews(user:dict=Depends(get_current_user),db:Session=Depends(get_db)):
+    if user is None:
+        raise HTTPException(status_code=401,detail='Please log in')
+    all_reviews = review_crud.get_all_reviews(db)
+    return all_reviews
+
+@router.get('/most_helpful_reviews',response_model=List[schemas.Review])
+def most_helpful_reviews(user:dict=Depends(get_current_user),db:Session=Depends(get_db)):
+    if user is None:
+        raise HTTPException(status_code=401,detail='Please log in')
+    all_reviews = review_crud.get_most_helpful_reviews(db)
+    return all_reviews

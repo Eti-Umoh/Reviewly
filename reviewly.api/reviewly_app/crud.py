@@ -1,6 +1,7 @@
 from fastapi import Depends
 from . import models,schemas
 from .utils import hash_password
+from sqlalchemy import desc
 
 
 class UserCrud:
@@ -19,6 +20,15 @@ class ReviewCrud:
         db.commit()
         db.refresh(review)
         return review
+    
+    def get_all_reviews(db):
+        all_reviews = db.query(models.Review).order_by(models.Review.date_created.desc()).all()
+        return all_reviews
+
+    def get_most_helpful_reviews(db):
+        all_reviews = db.query(models.Review).order_by(models.Review.helpful.desc()).all()
+        return all_reviews
+
     
 class UserHelpfulCrud:
     def create_user_helpful(db,user_id,review_id):
