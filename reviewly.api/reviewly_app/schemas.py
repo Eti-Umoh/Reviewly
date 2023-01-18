@@ -39,9 +39,6 @@ class Review(BaseModel):
     class Config:
         orm_mode=True
 
-class ShowReview(BaseModel):
-    all_reviews:List[Review]
-
 class CreateReview(BaseModel):
     review:str
     rating:int = Field(..., gt=0, le=10, description='maximum value for rating is 10')
